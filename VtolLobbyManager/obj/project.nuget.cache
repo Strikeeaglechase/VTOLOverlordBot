@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "RAR9G6hcWplGW3Wr5b3Tx/oEmNUdRx1Xu0vPkNnW8LfICK9LNkXS8iW+bFpTzAu0BdsQfYR836tcxR883VNH1w==",
+  "dgSpecHash": "lnLWpRpLkEQWPtq8LBC1A1Yx6EtNu+59GVMt721I3MBdcCuLVwKWVIm+1iN9aLAonWY8oQZamX97nVJ3aZX/fQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\VtolLobbyManager.csproj",
+  "projectFilePath": "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

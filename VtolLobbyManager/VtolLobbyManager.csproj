@@ -6,14 +6,18 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>true</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Facepunch.Steamworks.Win32">
-      <HintPath>Refrences\Facepunch.Steamworks.Win32.dll</HintPath>
+    <Reference Include="Facepunch.Steamworks.Posix">
+      <HintPath>Refrences\Facepunch.Steamworks.Posix.dll</HintPath>
     </Reference>
+	 <Content Include=".\lib\libsteam_api.so">
+      <Link>libsteam_api.so</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

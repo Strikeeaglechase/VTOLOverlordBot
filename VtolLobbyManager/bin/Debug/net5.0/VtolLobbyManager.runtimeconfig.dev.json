@@ -1,8 +1,8 @@
 {
   "runtimeOptions": {
     "additionalProbingPaths": [
-      "C:\\Users\\strik\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\strik\\.nuget\\packages"
+      "/home/strik/.dotnet/store/|arch|/|tfm|",
+      "/home/strik/.nuget/packages"
     ]
   }
 }
