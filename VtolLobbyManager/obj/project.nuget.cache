@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "lnLWpRpLkEQWPtq8LBC1A1Yx6EtNu+59GVMt721I3MBdcCuLVwKWVIm+1iN9aLAonWY8oQZamX97nVJ3aZX/fQ==",
+  "dgSpecHash": "vNBm2Y68yFKf0/ZZsYVkxniUwEyOlQ/RuFda5grWDQO/lEUnI+mqdGCFx6OkvPF/bZw+fmilqsxudK51JYSDEg==",
   "success": true,
-  "projectFilePath": "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\VtolLobbyManager.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\strik\\.nuget\\packages\\system.reactive\\4.3.2\\system.reactive.4.3.2.nupkg.sha512",
+    "C:\\Users\\strik\\.nuget\\packages\\system.threading.channels\\4.7.0\\system.threading.channels.4.7.0.nupkg.sha512",
+    "C:\\Users\\strik\\.nuget\\packages\\websocket.client\\4.4.43\\websocket.client.4.4.43.nupkg.sha512"
+  ],
   "logs": []
 }
