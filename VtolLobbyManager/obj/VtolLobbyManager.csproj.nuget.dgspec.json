@@ -1,25 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj": {}
+    "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\VtolLobbyManager.csproj": {}
   },
   "projects": {
-    "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj": {
+    "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\VtolLobbyManager.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj",
+        "projectUniqueName": "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\VtolLobbyManager.csproj",
         "projectName": "VtolLobbyManager",
-        "projectPath": "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj",
-        "packagesPath": "/home/strik/.nuget/packages/",
-        "outputPath": "/home/strik/Programs/ATCBot2/VtolLobbyManager/obj/",
+        "projectPath": "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\VtolLobbyManager.csproj",
+        "packagesPath": "C:\\Users\\strik\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/strik/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\strik\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net5.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -37,6 +39,12 @@
       "frameworks": {
         "net5.0": {
           "targetAlias": "net5.0",
+          "dependencies": {
+            "Websocket.Client": {
+              "target": "Package",
+              "version": "[4.4.43, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -52,7 +60,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/6.0.200/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.401\\RuntimeIdentifierGraph.json"
         }
       }
     }
