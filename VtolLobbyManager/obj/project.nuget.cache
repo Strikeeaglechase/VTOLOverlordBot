@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "vNBm2Y68yFKf0/ZZsYVkxniUwEyOlQ/RuFda5grWDQO/lEUnI+mqdGCFx6OkvPF/bZw+fmilqsxudK51JYSDEg==",
+  "dgSpecHash": "HVP5F16P4NxvfZvVOw1SJcPeLdWZcMdUfZMZnst60sOhuaW0fCm/41tUFGHTFUY+5BA1AUdG5Y/2Jpt0lfJOCw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\strik\\Desktop\\Programs\\Typescript\\ATCBot2\\VtolLobbyManager\\VtolLobbyManager.csproj",
+  "projectFilePath": "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\strik\\.nuget\\packages\\system.reactive\\4.3.2\\system.reactive.4.3.2.nupkg.sha512",
-    "C:\\Users\\strik\\.nuget\\packages\\system.threading.channels\\4.7.0\\system.threading.channels.4.7.0.nupkg.sha512",
-    "C:\\Users\\strik\\.nuget\\packages\\websocket.client\\4.4.43\\websocket.client.4.4.43.nupkg.sha512"
+    "/home/strik/.nuget/packages/system.reactive/4.3.2/system.reactive.4.3.2.nupkg.sha512",
+    "/home/strik/.nuget/packages/system.threading.channels/4.7.0/system.threading.channels.4.7.0.nupkg.sha512",
+    "/home/strik/.nuget/packages/websocket.client/4.4.43/websocket.client.4.4.43.nupkg.sha512"
   ],
   "logs": []
 }
