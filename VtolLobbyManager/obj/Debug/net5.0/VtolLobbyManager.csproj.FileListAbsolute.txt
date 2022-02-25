@@ -35,3 +35,6 @@ C:/Users/strik/Desktop/Programs/Typescript/ATCBot2/VtolLobbyManager/obj/Debug/ne
 /home/strik/Programs/ATCBot2/VtolLobbyManager/obj/Debug/net5.0/ref/VtolLobbyManager.dll
 /home/strik/Programs/ATCBot2/VtolLobbyManager/bin/Debug/net5.0/Facepunch.Steamworks.Posix.dll
 /home/strik/Programs/ATCBot2/VtolLobbyManager/bin/Debug/net5.0/libsteam_api.so
+/home/strik/Programs/ATCBot2/VtolLobbyManager/bin/Debug/net5.0/Websocket.Client.dll
+/home/strik/Programs/ATCBot2/VtolLobbyManager/bin/Debug/net5.0/System.Reactive.dll
+/home/strik/Programs/ATCBot2/VtolLobbyManager/bin/Debug/net5.0/System.Reactive.xml

@@ -14,6 +14,7 @@
     <Reference Include="Facepunch.Steamworks.Posix">
       <HintPath>Refrences\Facepunch.Steamworks.Posix.dll</HintPath>
     </Reference>
+	 <Reference Include="System.Web.Extensions" />
 	 <Content Include=".\lib\libsteam_api.so">
       <Link>libsteam_api.so</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
