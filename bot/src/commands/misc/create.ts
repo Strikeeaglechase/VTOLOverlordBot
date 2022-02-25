@@ -1,4 +1,4 @@
-import { BotCommandArgument, BotCommandReturn, Command, CommandEvent } from "strike-discord-framework/dist/command.js";
+import { Command, CommandEvent } from "strike-discord-framework/dist/command.js";
 import { Application } from "../../application.js";
 
 class Create extends Command {

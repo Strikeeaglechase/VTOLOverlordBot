@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Intents, IntentsString } from "discord.js";
 import { config as dotenvConfig } from "dotenv";
 import FrameworkClient from "strike-discord-framework";

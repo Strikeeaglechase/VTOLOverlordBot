@@ -29,6 +29,8 @@ interface RawLobby {
 	ld_GameState: string;
 	mUtc: null;
 	playerCount: number;
+	modCount: string;
+	loadedMods: string;
 }
 
 interface Lobby {
@@ -37,10 +39,12 @@ interface Lobby {
 	ownerId: string;
 	scenarioName: string;
 	scenarioId: string;
-	maxPlayers: number,
-	gameVersion: string,
-	gameState: GameState,
-	playerCount: number,
+	maxPlayers: number;
+	gameVersion: string;
+	gameState: GameState;
+	playerCount: number;
+	modCount: number;
+	loadedMods: string[];
 }
 
 const missions = [
@@ -71,6 +75,8 @@ function parseRawLobby(lobby: RawLobby): Lobby {
 		gameVersion: lobby.gameVersion,
 		gameState: gameState,
 		playerCount: lobby.playerCount,
+		modCount: lobby.modCount ? parseInt(lobby.modCount) : 0,
+		loadedMods: lobby.loadedMods ? lobby.loadedMods.split(",") : []
 	};
 }
 
@@ -94,7 +100,7 @@ class Application {
 	private server: WebSocketServer;
 	private socket: WebSocket;
 
-	private lobbies: Lobby[] = [];
+	public lobbies: Lobby[] = [];
 	public displayMessages: CollectionManager<string, MessageLocator>;
 
 	constructor(private framework: FrameworkClient) {
@@ -159,9 +165,15 @@ class Application {
 		const emb = this.makeLobbiesEmbed();
 		const messageLocators = await this.displayMessages.get();
 		const proms = messageLocators.map(async mloc => {
-			const guild = await this.framework.client.guilds.fetch(mloc.guild);
-			const channel = guild?.channels.cache.get(mloc.channel) as TextChannel;
-			const message = await channel?.messages.fetch(mloc.id);
+			const guild = await this.framework.client.guilds.fetch(mloc.guild).catch(() => { });
+			if (!guild) {
+				this.log.error(`Unable to resolve message. mloc: ${JSON.stringify(mloc)}`);
+				await this.displayMessages.remove(mloc.id);
+				return;
+			}
+
+			const channel = guild.channels.cache.get(mloc.channel) as TextChannel;
+			const message = await channel?.messages.fetch(mloc.id).catch(() => { });
 			if (!message) {
 				this.log.error(`Unable to resolve message. mloc: ${JSON.stringify(mloc)}`);
 				await this.displayMessages.remove(mloc.id);
@@ -215,7 +227,9 @@ class Application {
 	}
 
 	lobbyToString(lobby: Lobby): string {
-		return `Host: ${lobby.ownerName}\n${lobby.scenarioName}\n${lobby.playerCount}/${lobby.maxPlayers} Players\n${lobby.gameState}\n${lobby.gameVersion}`;
+		let str = `Host: ${lobby.ownerName}\n${lobby.scenarioName}\n${lobby.playerCount}/${lobby.maxPlayers} Players\n${lobby.gameState ? lobby.gameState : "Mission"}\n${lobby.gameVersion}`;
+		if (parseGameVersion(lobby.gameVersion) == "Modded") str += ` (${lobby.modCount} mod${lobby.modCount > 1 ? "s" : ""} loaded)`;
+		return str;
 	}
 
 	lobbyToStringOldCringWayThatImNotUsingBecauseIGotBullied(lobby: Lobby): string {
@@ -226,4 +240,4 @@ class Application {
 	}
 }
 
-export { Application };
+export { Application, parseGameVersion };
