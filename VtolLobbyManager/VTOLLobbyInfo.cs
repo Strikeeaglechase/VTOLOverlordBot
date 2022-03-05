@@ -44,6 +44,7 @@ namespace VtolLobbyManager
 			passwordHash = lobby.GetData("pwh");
 			ld_GameState = lobby.GetData("gState");
 			gameVersion = lobby.GetData("ver");
+			mUtc = lobby.GetData("mUtc");
 			if (gameVersion.Contains("m"))
 			{
 				modCount = lobby.GetData("lModCount");

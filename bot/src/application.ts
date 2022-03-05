@@ -7,7 +7,8 @@ import { CollectionManager } from "strike-discord-framework/dist/collectionManag
 
 enum GameState {
 	mission = "Mission",
-	briefing = "Briefing"
+	briefing = "Briefing",
+	debrief = "Debrief"
 }
 
 interface LobbyDataMessage {
@@ -45,6 +46,7 @@ interface Lobby {
 	playerCount: number;
 	modCount: number;
 	loadedMods: string[];
+	startedAt: Date;
 }
 
 const missions = [
@@ -59,10 +61,10 @@ const missions = [
 
 function parseRawLobby(lobby: RawLobby): Lobby {
 	let gameState: GameState;
-
 	switch (lobby.ld_GameState) {
 		case "Mission": gameState = GameState.mission; break;
 		case "Briefing": gameState = GameState.briefing; break;
+		case "Debrief": gameState = GameState.debrief; break;
 	}
 
 	return {
@@ -76,7 +78,8 @@ function parseRawLobby(lobby: RawLobby): Lobby {
 		gameState: gameState,
 		playerCount: lobby.playerCount,
 		modCount: lobby.modCount ? parseInt(lobby.modCount) : 0,
-		loadedMods: lobby.loadedMods ? lobby.loadedMods.split(",") : []
+		loadedMods: lobby.loadedMods ? lobby.loadedMods.split(",") : [],
+		startedAt: new Date(lobby.mUtc)
 	};
 }
 
@@ -190,8 +193,11 @@ class Application {
 			title: "VTOL VR Lobbies:"
 		});
 
-		this.lobbies.sort((a, b) => b.playerCount - a.playerCount).forEach(lobby => {
-			emb.addField(lobby.name, this.lobbyToString(lobby), true);
+		this.lobbies.sort((a, b) => b.playerCount - a.playerCount).forEach((lobby, idx) => {
+			if (lobby.name && lobby.name.length > 1) {
+				let safeName = lobby.name.trim().length > 0 ? lobby.name.trim() : "<name empty>";
+				emb.addField(safeName, this.lobbyToString(lobby), true);
+			}
 		});
 
 		emb.setTimestamp();
@@ -227,8 +233,11 @@ class Application {
 	}
 
 	lobbyToString(lobby: Lobby): string {
-		let str = `Host: ${lobby.ownerName}\n${lobby.scenarioName}\n${lobby.playerCount}/${lobby.maxPlayers} Players\n${lobby.gameState ? lobby.gameState : "Mission"}\n${lobby.gameVersion}`;
-		if (parseGameVersion(lobby.gameVersion) == "Modded") str += ` (${lobby.modCount} mod${lobby.modCount > 1 ? "s" : ""} loaded)`;
+		const duration = new Date(Date.now() - lobby.startedAt.getTime());
+		const pad = (v: number) => v.toString().length > 1 ? v.toString() : '0' + v.toString();
+		const time = lobby.gameState == GameState.mission ? `(${duration.getUTCHours()}:${pad(duration.getMinutes())})` : "";
+		let str = `Host: ${lobby.ownerName}\n${lobby.scenarioName}\n${lobby.playerCount}/${lobby.maxPlayers} Players\n${lobby.gameState ? lobby.gameState : "Mission"} ${time}\n${lobby.gameVersion}`;
+		if (parseGameVersion(lobby.gameVersion) == "Modded") str += ` (${lobby.modCount} mod${lobby.modCount != 1 ? "s" : ""} loaded)`;
 		return str;
 	}
 
