@@ -1,14 +1,17 @@
+import { Arg, CommandRun } from "strike-discord-framework/dist/argumentParser";
 import { Command, CommandEvent } from "strike-discord-framework/dist/command.js";
 import { Application } from "../../application.js";
 
 class Create extends Command {
 	name = "create";
 	help = {
-		msg: "Creates a new display message",
+		msg: "Creates a new display message. Specify version to limit to only some types of lobbies (ie `m` for modded)",
+		usage: "<version>"
 	};
 	allowDM = false;
 
-	async run({ message, framework, app }: CommandEvent<Application>) {
+	@CommandRun
+	async run({ message, framework, app }: CommandEvent<Application>, @Arg({ optional: true }) limitVersions: string) {
 		if (!message.member.permissions.has("ADMINISTRATOR")) {
 			return framework.error(`Only an administrator can run this command`);
 		}
