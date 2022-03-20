@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "HVP5F16P4NxvfZvVOw1SJcPeLdWZcMdUfZMZnst60sOhuaW0fCm/41tUFGHTFUY+5BA1AUdG5Y/2Jpt0lfJOCw==",
+  "dgSpecHash": "EYuxuVLFTl2kO4EKMHevjSdCqX1csUWTum1IZEeqkDl3GNHXI3pTSeu+M6UqkYuAvGCNNRpoeqyGcQc3Pt++kQ==",
   "success": true,
-  "projectFilePath": "/home/strik/Programs/ATCBot2/VtolLobbyManager/VtolLobbyManager.csproj",
+  "projectFilePath": "/home/strik/Programs/VTOLOverlordBot/VtolLobbyManager/VtolLobbyManager.csproj",
   "expectedPackageFiles": [
     "/home/strik/.nuget/packages/system.reactive/4.3.2/system.reactive.4.3.2.nupkg.sha512",
     "/home/strik/.nuget/packages/system.threading.channels/4.7.0/system.threading.channels.4.7.0.nupkg.sha512",

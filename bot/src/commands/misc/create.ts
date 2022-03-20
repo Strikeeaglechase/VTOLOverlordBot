@@ -1,4 +1,4 @@
-import { Arg, CommandRun } from "strike-discord-framework/dist/argumentParser";
+import { Arg, CommandRun } from "strike-discord-framework/dist/argumentParser.js";
 import { Command, CommandEvent } from "strike-discord-framework/dist/command.js";
 import { Application } from "../../application.js";
 
@@ -16,22 +16,24 @@ class Create extends Command {
 			return framework.error(`Only an administrator can run this command`);
 		}
 
-		const existing = await app.displayMessages.collection.findOne({ guild: message.guild.id });
+		const existing = await app.configs.collection.findOne({ id: message.guild.id });
 		if (existing) {
 			const conf = await framework.utils.reactConfirm(`A display message already exists in <#${existing.channel}>, would you like to overwrite it?`, message);
 			if (!conf) return;
-			await app.displayMessages.remove(existing.id);
+			await app.configs.remove(existing.id);
 		}
-
-		const msg = await message.channel.send({ embeds: [{ title: "VTOL VR Lobbies:" }] });
-		await app.displayMessages.add({
-
-			id: msg.id,
-			channel: msg.channel.id,
-			guild: msg.guild.id
+		if (!limitVersions) limitVersions = 'fpm';
+		await app.configs.add({
+			id: message.guild.id,
+			messages: { f: null, p: null, m: null },
+			channel: message.channel.id,
+			shownTypes: limitVersions
 		});
 
 		await message.delete().catch(() => { });
+		const tempM = await message.channel.send(framework.success(`Message will be created in <30 seconds`));
+		await new Promise(res => setTimeout(res, 2500));
+		await tempM.delete();
 	}
 }
 export default Create;

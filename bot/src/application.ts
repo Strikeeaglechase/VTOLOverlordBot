@@ -2,7 +2,7 @@ import FrameworkClient from "strike-discord-framework";
 import Logger from "strike-discord-framework/dist/logger";
 import { WebSocket, WebSocketServer } from "ws";
 import { spawn } from "child_process";
-import { MessageEmbed, TextChannel } from "discord.js";
+import { Channel, MessageEmbed, TextChannel } from "discord.js";
 import { CollectionManager } from "strike-discord-framework/dist/collectionManager";
 
 enum GameState {
@@ -32,6 +32,7 @@ interface RawLobby {
 	playerCount: number;
 	modCount: string;
 	loadedMods: string;
+	id: string;
 }
 
 interface Lobby {
@@ -47,6 +48,7 @@ interface Lobby {
 	modCount: number;
 	loadedMods: string[];
 	startedAt: Date;
+	id: string;
 }
 
 const missions = [
@@ -79,7 +81,8 @@ function parseRawLobby(lobby: RawLobby): Lobby {
 		playerCount: lobby.playerCount,
 		modCount: lobby.modCount ? parseInt(lobby.modCount) : 0,
 		loadedMods: lobby.loadedMods ? lobby.loadedMods.split(",") : [],
-		startedAt: new Date(lobby.mUtc)
+		startedAt: new Date(lobby.mUtc),
+		id: lobby.id,
 	};
 }
 
@@ -91,31 +94,49 @@ function parseGameVersion(ver: string) {
 	return "Stable";
 }
 
+type VTOLVersion = "f" | "p" | "m";
+const names: Record<VTOLVersion, string> = {
+	"f": "Stable",
+	"p": "Public Testing",
+	"m": "Modded"
+};
+interface ServerDisplayConfig {
+	messages: Record<VTOLVersion, MessageLocator | null>;
+	shownTypes: string;
+	channel: string;
+	id: string;
+}
+
 interface MessageLocator {
 	id: string;
 	channel: string;
 	guild: string;
 }
 
-const PORT = 38560;
 class Application {
 	public log: Logger;
 	private server: WebSocketServer;
 	private socket: WebSocket;
 
 	public lobbies: Lobby[] = [];
-	public displayMessages: CollectionManager<string, MessageLocator>;
+	public prevLobbies: Lobby[] = [];
+	// public displayMessages: CollectionManager<string, MessageLocator>;
+	public configs: CollectionManager<string, ServerDisplayConfig>;
+	public lobbyHistory: CollectionManager<string, Lobby>;
 
 	constructor(private framework: FrameworkClient) {
 		this.log = framework.log;
 	}
 
 	async init() {
-		this.server = new WebSocketServer({ port: PORT });
-		this.displayMessages = await this.framework.database.collection("messages", false, "id");
+		const port = parseInt(process.env.PORT);
+		const displayMessages = await this.framework.database.collection<string, MessageLocator>("messages", false, "id");
+		this.lobbyHistory = await this.framework.database.collection("lobbies", false, "id");
+		this.configs = await this.framework.database.collection("configs", false, "id");
+		this.server = new WebSocketServer({ port: port });
 
 		this.server.on("listening", () => {
-			this.log.info(`Websocket server listening on ${PORT}`);
+			this.log.info(`Websocket server listening on ${port}`);
 			this.createManagerProcess();
 		});
 
@@ -141,6 +162,25 @@ class Application {
 			}, 1000);
 		});
 
+		// Migrate old configs
+		const messages = await displayMessages.get();
+		messages.map(async msg => {
+			const existing = await this.configs.get(msg.guild);
+			if (existing) {
+				this.log.info(`Skipping config migration as ${msg.guild} already has a new one!`);
+				return;
+			}
+
+			this.log.info(`Migrating config for ${msg.guild} (channel: ${msg.channel} msg: ${msg.id})`);
+			const config: ServerDisplayConfig = {
+				id: msg.guild,
+				messages: { "f": msg, "m": null, p: null },
+				channel: msg.channel,
+				shownTypes: "fpm"
+			};
+			this.configs.add(config);
+		});
+
 		this.server.on("error", (e) => this.log.error(e));
 	}
 
@@ -150,55 +190,89 @@ class Application {
 		manager.stdout.on("data", (chunk) => {
 			this.log.info("Lobby Manager: " + chunk.toString().trim());
 		});
+		manager.stderr.on("data", (chunk) => {
+			this.log.info("Lobby Manager: " + chunk.toString().trim());
+		});
 		manager.on("spawn", () => {
 			this.log.info(`VTOL lobby manager has started! Waiting for websocket connection.`);
 		});
+	}
+
+	compareLobbies(a: Lobby, b: Lobby) {
+		return JSON.stringify(a) == JSON.stringify(b);
 	}
 
 	handleLobbyMessage(message: string) {
 		if (!message || message.length < 2) return this.log.info(`Got invalid message from lobby manager: ${message}`);
 		const data = JSON.parse(message) as LobbyDataMessage;
 		this.lobbies = data.lobbies.map(l => parseRawLobby(l));
+
+		this.lobbies.forEach(lobby => {
+			const old = this.prevLobbies.find(pl => pl.id == lobby.id);
+			if (!old || !this.compareLobbies(old, lobby)) {
+				this.lobbyHistory.add(lobby);
+			}
+		});
+		this.prevLobbies = [...this.lobbies];
 		this.updateLobbyData();
 	}
 
 	async updateLobbyData() {
-		// const channel = await this.framework.client.channels.fetch("946514347067330591") as TextChannel;
-		// await channel.send({ embeds: [this.makeLobbiesEmbed()] });
-		const emb = this.makeLobbiesEmbed();
-		const messageLocators = await this.displayMessages.get();
-		const proms = messageLocators.map(async mloc => {
-			const guild = await this.framework.client.guilds.fetch(mloc.guild).catch(() => { });
+		const configs = await this.configs.get();
+		const proms = configs.map(async config => {
+			const guild = await this.framework.client.guilds.fetch(config.id).catch(() => { });
+
 			if (!guild) {
-				this.log.error(`Unable to resolve message. mloc: ${JSON.stringify(mloc)}`);
-				await this.displayMessages.remove(mloc.id);
+				this.log.error(`Unable to resolve message. mloc: ${JSON.stringify(config)}`);
+				await this.configs.remove(config.id);
 				return;
 			}
 
-			const channel = guild.channels.cache.get(mloc.channel) as TextChannel;
-			const message = await channel?.messages.fetch(mloc.id).catch(() => { });
-			if (!message) {
-				this.log.error(`Unable to resolve message. mloc: ${JSON.stringify(mloc)}`);
-				await this.displayMessages.remove(mloc.id);
-			} else {
-				await message.edit({ embeds: [emb] });
-			}
+			config.shownTypes.split("").forEach(async (type: VTOLVersion) => {
+				const emb = this.makeLobbiesEmbed(type);
+				const channel = guild.channels.cache.get(config.channel) as TextChannel;
+				if (!channel) return;
+				if (!config.messages[type]) {
+					// Create new message
+					const msg = await channel.send({ embeds: [emb] });
+					config.messages[type] = {
+						id: msg.id,
+						channel: channel.id,
+						guild: channel.guild.id
+					};
+					// @ts-ignore
+					// delete config._id;
+					await this.configs.update(config, config.id);
+				} else {
+					const message = await channel?.messages.fetch(config.messages[type].id).catch(() => { });
+					if (!message) {
+						this.log.error(`Unable to resolve message. config: ${JSON.stringify(config)}`);
+						config.messages[type] = null;
+						await this.configs.update(config, config.id);
+					} else {
+						await message.edit({ embeds: [emb] });
+					}
+				}
+			});
 		});
 
 		await Promise.all(proms);
 	}
 
-	makeLobbiesEmbed(): MessageEmbed {
+	makeLobbiesEmbed(type: VTOLVersion): MessageEmbed {
 		const emb = new MessageEmbed({
-			title: "VTOL VR Lobbies:"
+			title: `VTOL VR ${names[type]} Lobbies:`
 		});
 
-		this.lobbies.sort((a, b) => b.playerCount - a.playerCount).forEach((lobby, idx) => {
-			if (lobby.name && lobby.name.length > 1) {
-				let safeName = lobby.name.trim().length > 0 ? lobby.name.trim() : "<name empty>";
-				emb.addField(safeName, this.lobbyToString(lobby), true);
-			}
-		});
+		this.lobbies
+			.filter(l => l.gameVersion.includes(type))
+			.sort((a, b) => b.playerCount - a.playerCount)
+			.forEach((lobby, idx) => {
+				if (lobby.name && lobby.name.length > 1) {
+					let safeName = lobby.name.trim().length > 0 ? lobby.name.trim() : "<name empty>";
+					emb.addField(safeName, this.lobbyToString(lobby), true);
+				}
+			});
 
 		emb.setTimestamp();
 

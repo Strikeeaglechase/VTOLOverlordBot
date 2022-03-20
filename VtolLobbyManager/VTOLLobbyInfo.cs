@@ -26,6 +26,8 @@ namespace VtolLobbyManager
 		public string modCount;
 		public string loadedMods;
 
+		public string id;
+
 		public Lobby lobby;
 		public VTOLLobbyInfo(Lobby lobby)
 		{
@@ -45,6 +47,7 @@ namespace VtolLobbyManager
 			ld_GameState = lobby.GetData("gState");
 			gameVersion = lobby.GetData("ver");
 			mUtc = lobby.GetData("mUtc");
+			id = lobby.Id.ToString();
 			if (gameVersion.Contains("m"))
 			{
 				modCount = lobby.GetData("lModCount");

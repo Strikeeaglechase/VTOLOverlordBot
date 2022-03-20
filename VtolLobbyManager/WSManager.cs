@@ -14,8 +14,16 @@ namespace VtolLobbyManager
 		private WebsocketClient client;
 		public void Init()
 		{
+			string port = "";
+			foreach (var line in File.ReadAllLines("../../bot/dist/.env"))
+			{
+				var parts = line.Split('=');
+				if (parts[0] == "PORT") port = parts[1];
+			}
+			Console.WriteLine($"Got port from ENV file: {port}");
+
 			Console.WriteLine("Setting up websocket");
-			client = new WebsocketClient(new Uri("ws://localhost:38560"));
+			client = new WebsocketClient(new Uri($"ws://localhost:{port}"));
 
 			client.Start();
 		}
