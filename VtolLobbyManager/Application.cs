@@ -32,6 +32,7 @@ namespace VtolLobbyManager
 				{
 					GetLobbies(cur - lastLobbySearch > 300 * 1000);
 					lastRefresh = cur;
+					if (cur - lastLobbySearch > 300 * 1000) lastLobbySearch = cur;
 				}
 			}
 		}
