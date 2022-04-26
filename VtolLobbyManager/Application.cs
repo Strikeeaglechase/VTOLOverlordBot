@@ -12,6 +12,7 @@ namespace VtolLobbyManager
 	class Application
 	{
 		private long lastRefresh = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+		private long lastLobbySearch = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 		private WSManager socket;
 
 		async public Task Start()
@@ -21,7 +22,7 @@ namespace VtolLobbyManager
 			socket = new WSManager();
 			socket.Init();
 			Steamworks.SteamClient.Init(667970, true);
-			GetLobbies();
+			GetLobbies(true);
 			while (true)
 			{
 				Thread.Sleep(1000 / 60);
@@ -29,12 +30,12 @@ namespace VtolLobbyManager
 				long cur = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 				if (cur - lastRefresh > 30 * 1000)
 				{
-					GetLobbies();
+					GetLobbies(cur - lastLobbySearch > 300 * 1000);
 					lastRefresh = cur;
 				}
 			}
 		}
-		async private void GetLobbies()
+		async private void GetLobbies(bool doPlayerSearch)
 		{
 			LobbyQuery lobbyQuery = SteamMatchmaking.LobbyList.FilterDistanceWorldwide().WithMaxResults(100)
 											.WithHigher("maxP", 1).WithEqual("lReady", 1).WithEqual("pwh", 0);
@@ -45,10 +46,40 @@ namespace VtolLobbyManager
 			{
 				VTOLLobbyInfo lobbyInfo = new VTOLLobbyInfo(lobbyData);
 				lobbyInfos.Add(lobbyInfo);
-				// Console.WriteLine($"{lobbyInfo.lobbyName} hosted by {lobbyInfo.ownerName} Players: {lobbyInfo.playerCount}/{lobbyInfo.maxPlayers}, {lobbyInfo.scenarioName}  {lobbyInfo.gameVersion}.");
+
+				if (doPlayerSearch) CheckLobbyForPlayers(lobbyData, lobbyInfo);
 			});
 
 			socket.Send(new LobbyData(lobbyInfos));
+		}
+
+		private async void CheckLobbyForPlayers(Lobby lobbyData, VTOLLobbyInfo lobbyInfo)
+		{
+			var steamworksLobby = await SteamMatchmaking.JoinLobbyAsync(lobbyData.Id);
+			foreach (var member in steamworksLobby.Value.Members)
+			{
+				var data = new PlayerLocatorInfo(member.Id, member.Name, lobbyData.Id.Value, lobbyInfo.lobbyName, lobbyInfo.scenarioName);
+				socket.Send(data);
+			}
+
+			steamworksLobby.Value.Leave();
+		}
+
+		class PlayerLocatorInfo
+		{
+			public string steamId;
+			public string name;
+			public string lobbyId;
+			public string lobbyName;
+			public string lobbyMission;
+			public PlayerLocatorInfo(SteamId steamId, string name, ulong lobbyId, string lobbyName, string lobbyMission)
+			{
+				this.steamId = steamId.ToString();
+				this.name = name;
+				this.lobbyId = lobbyId.ToString();
+				this.lobbyName = lobbyName;
+				this.lobbyMission = lobbyMission;
+			}
 		}
 	}
 }

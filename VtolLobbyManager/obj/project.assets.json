@@ -118,11 +118,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/strik/Programs/VTOLOverlordBot/VtolLobbyManager/VtolLobbyManager.csproj",
+      "projectUniqueName": "/home/strik/Programs/VTOLOverlordBotDev/VtolLobbyManager/VtolLobbyManager.csproj",
       "projectName": "VtolLobbyManager",
-      "projectPath": "/home/strik/Programs/VTOLOverlordBot/VtolLobbyManager/VtolLobbyManager.csproj",
+      "projectPath": "/home/strik/Programs/VTOLOverlordBotDev/VtolLobbyManager/VtolLobbyManager.csproj",
       "packagesPath": "/home/strik/.nuget/packages/",
-      "outputPath": "/home/strik/Programs/VTOLOverlordBot/VtolLobbyManager/obj/",
+      "outputPath": "/home/strik/Programs/VTOLOverlordBotDev/VtolLobbyManager/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/strik/.nuget/NuGet/NuGet.Config"

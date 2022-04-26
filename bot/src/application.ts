@@ -2,7 +2,7 @@ import FrameworkClient from "strike-discord-framework";
 import Logger from "strike-discord-framework/dist/logger";
 import { WebSocket, WebSocketServer } from "ws";
 import { spawn } from "child_process";
-import { Channel, MessageEmbed, TextChannel } from "discord.js";
+import { Channel, Message, MessageEmbed, TextChannel } from "discord.js";
 import { CollectionManager } from "strike-discord-framework/dist/collectionManager";
 
 enum GameState {
@@ -13,6 +13,14 @@ enum GameState {
 
 interface LobbyDataMessage {
 	lobbies: RawLobby[];
+}
+
+interface PlayerLobbyMessage {
+	steamId: string;
+	name: string;
+	lobbyId: string;
+	lobbyName: string;
+	lobbyMission: string;
 }
 
 interface RawLobby {
@@ -113,6 +121,16 @@ interface MessageLocator {
 	guild: string;
 }
 
+interface PlayerStalkConfig {
+	guildId: string;
+	channelId: string;
+	steamId: string;
+}
+
+function isLobbyDataMessage(value: any): value is LobbyDataMessage {
+	return value.lobbies != null && Array.isArray(value.lobbies);
+}
+
 class Application {
 	public log: Logger;
 	private server: WebSocketServer;
@@ -122,7 +140,10 @@ class Application {
 	public prevLobbies: Lobby[] = [];
 	// public displayMessages: CollectionManager<string, MessageLocator>;
 	public configs: CollectionManager<string, ServerDisplayConfig>;
+	public stalks: CollectionManager<string, PlayerStalkConfig>;
 	public lobbyHistory: CollectionManager<string, Lobby>;
+
+	lastKnownLocations: Record<string, string> = {};
 
 	constructor(private framework: FrameworkClient) {
 		this.log = framework.log;
@@ -133,6 +154,8 @@ class Application {
 		const displayMessages = await this.framework.database.collection<string, MessageLocator>("messages", false, "id");
 		this.lobbyHistory = await this.framework.database.collection("lobbies", false, "id");
 		this.configs = await this.framework.database.collection("configs", false, "id");
+		this.stalks = await this.framework.database.collection("stalks", false, "channelId");
+
 		this.server = new WebSocketServer({ port: port });
 
 		this.server.on("listening", () => {
@@ -204,17 +227,45 @@ class Application {
 
 	handleLobbyMessage(message: string) {
 		if (!message || message.length < 2) return this.log.info(`Got invalid message from lobby manager: ${message}`);
-		const data = JSON.parse(message) as LobbyDataMessage;
-		this.lobbies = data.lobbies.map(l => parseRawLobby(l));
+		const data = JSON.parse(message) as LobbyDataMessage | PlayerLobbyMessage;
+		if (isLobbyDataMessage(data)) {
+			this.lobbies = data.lobbies.map(l => parseRawLobby(l));
 
-		this.lobbies.forEach(lobby => {
-			const old = this.prevLobbies.find(pl => pl.id == lobby.id);
-			if (!old || !this.compareLobbies(old, lobby)) {
-				this.lobbyHistory.add(lobby);
-			}
+			this.lobbies.forEach(lobby => {
+				const old = this.prevLobbies.find(pl => pl.id == lobby.id);
+				if (!old || !this.compareLobbies(old, lobby)) {
+					this.lobbyHistory.add(lobby);
+				}
+			});
+			this.prevLobbies = [...this.lobbies];
+			this.updateLobbyData();
+		} else {
+			this.handlePlayerLobbyMessage(data);
+		}
+
+	}
+
+	async handlePlayerLobbyMessage(message: PlayerLobbyMessage) {
+		if (this.lastKnownLocations[message.steamId] == message.lobbyId) return;
+
+		const stalkedPlayers = await this.stalks.get();
+		const notifs = stalkedPlayers.filter(p => p.steamId == message.steamId);
+		if (notifs.length == 0) return;
+
+		this.log.info(`Found ${message.name} in ${message.lobbyName} playing ${message.lobbyMission}`);
+		this.lastKnownLocations[message.steamId] = message.lobbyId;
+
+		const emb = new MessageEmbed({
+			title: `${message.name} found!`,
+			description: `${message.name} is currently playing in the lobby called "${message.lobbyName}" doing ${message.lobbyMission}`
 		});
-		this.prevLobbies = [...this.lobbies];
-		this.updateLobbyData();
+		notifs.forEach(async notif => {
+			const guild = this.framework.client.guilds.resolve(notif.guildId);
+			if (!guild) return;
+			const channel = await guild.channels.fetch(notif.channelId).catch(() => { });
+			if (!channel) return;
+			await (channel as TextChannel).send({ embeds: [emb] });
+		});
 	}
 
 	async updateLobbyData() {
@@ -240,8 +291,7 @@ class Application {
 						channel: channel.id,
 						guild: channel.guild.id
 					};
-					// @ts-ignore
-					// delete config._id;
+
 					await this.configs.update(config, config.id);
 				} else {
 					const message = await channel?.messages.fetch(config.messages[type].id).catch(() => { });
@@ -250,7 +300,14 @@ class Application {
 						config.messages[type] = null;
 						await this.configs.update(config, config.id);
 					} else {
-						await message.edit({ embeds: [emb] });
+						try {
+							await message.edit({ embeds: [emb] });
+						} catch (e) {
+							this.log.error(`Unable to edit message!`);
+							this.log.error(e);
+							config.messages[type] = null;
+							await this.configs.update(config, config.id);
+						}
 					}
 				}
 			});
@@ -323,4 +380,4 @@ class Application {
 	}
 }
 
-export { Application, parseGameVersion };
+export { Application, parseGameVersion, PlayerStalkConfig };

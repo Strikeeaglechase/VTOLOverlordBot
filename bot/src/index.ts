@@ -6,11 +6,10 @@ import { FrameworkClientOptions } from "strike-discord-framework/dist/interfaces
 import { Application } from "./application.js";
 dotenvConfig();
 
-
 const frameworkOptions: FrameworkClientOptions = {
 	commandsPath: `${process.cwd()}/commands/`,
 	databaseOpts: {
-		databaseName: process.env.DB_NAME + (process.env.IS_DEV == "true" ? "-dev" : ""),
+		databaseName: process.env.DB_NAME,
 		url: process.env.DB_URL
 	},
 	loggerOpts: {

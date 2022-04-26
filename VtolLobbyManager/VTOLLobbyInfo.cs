@@ -27,11 +27,8 @@ namespace VtolLobbyManager
 		public string loadedMods;
 
 		public string id;
-
-		public Lobby lobby;
 		public VTOLLobbyInfo(Lobby lobby)
 		{
-			this.lobby = lobby;
 			playerCount = lobby.MemberCount;
 
 			lobbyName = lobby.GetData("lName");

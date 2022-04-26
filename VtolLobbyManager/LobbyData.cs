@@ -11,11 +11,11 @@ namespace VtolLobbyManager
 {
 	public class LobbyData
 	{
-		public List<VTOLLobbyInfo> lobbies = new List<VTOLLobbyInfo>();
+		public VTOLLobbyInfo[] lobbies;
 
 		public LobbyData(List<VTOLLobbyInfo> lobbies)
 		{
-			this.lobbies = lobbies;
+			this.lobbies = lobbies.ToArray();
 		}
 	}
 }
