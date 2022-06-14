@@ -305,8 +305,6 @@ class Application {
 						} catch (e) {
 							this.log.error(`Unable to edit message!`);
 							this.log.error(e);
-							config.messages[type] = null;
-							await this.configs.update(config, config.id);
 						}
 					}
 				}
