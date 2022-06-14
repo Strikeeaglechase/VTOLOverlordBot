@@ -264,7 +264,7 @@ class Application {
 			if (!guild) return;
 			const channel = await guild.channels.fetch(notif.channelId).catch(() => { });
 			if (!channel) return;
-			await (channel as TextChannel).send({ embeds: [emb] });
+			await (channel as TextChannel).send({ embeds: [emb] }).catch(() => {});
 		});
 	}
 
@@ -285,7 +285,8 @@ class Application {
 				if (!channel) return;
 				if (!config.messages[type]) {
 					// Create new message
-					const msg = await channel.send({ embeds: [emb] });
+					const msg = await channel.send({ embeds: [emb] }).catch(()=>{});
+					if(!msg) return;
 					config.messages[type] = {
 						id: msg.id,
 						channel: channel.id,
@@ -301,7 +302,7 @@ class Application {
 						await this.configs.update(config, config.id);
 					} else {
 						try {
-							await message.edit({ embeds: [emb] });
+							await message.edit({ embeds: [emb] }).catch(() => {});
 						} catch (e) {
 							this.log.error(`Unable to edit message!`);
 							this.log.error(e);
